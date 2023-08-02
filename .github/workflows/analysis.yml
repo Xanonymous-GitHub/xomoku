@@ -1,0 +1,38 @@
+name: Scan code
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  analysis:
+    name: analysis
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ macos-latest ]
+
+    steps:
+      # Set up Flutter.
+      - name: Clone Flutter repository with stable channel
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.10.x'
+
+      # checkout codebase.
+      - name: Checkout codebase
+        uses: actions/checkout@v3
+
+      # Get packages.
+      - name: Get dependencies
+        run: flutter pub get
+
+      # check code is formatted correctly.
+      - name: Ensure the Dart code is formatted correctly
+        run: dart format --set-exit-if-changed -l 120 .
+
+      # Analyze, check formatting, and run unit tests.
+      - run: flutter analyze --no-pub --no-current-package --fatal-infos --fatal-warnings .
+        continue-on-error: true
